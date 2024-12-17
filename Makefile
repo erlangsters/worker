@@ -1,5 +1,5 @@
 PROJECT = otpless_worker
-PROJECT_DESCRIPTION = New project
+PROJECT_DESCRIPTION = The gen_server behavior for OTPless Erlang.
 PROJECT_VERSION = 0.1.0
 
 DEPS = spawn_mode
