@@ -14,6 +14,13 @@ is_process_alive(Pid, Timeout) ->
     timer:sleep(Timeout),
     erlang:is_process_alive(Pid).
 
+flush_messages() ->
+    receive
+        _ -> flush_messages()
+    after 0 ->
+        ok
+    end.
+
 worker_test() ->
     % A canonical test meant to verify the key features of the behavior.
     meck:new(my_worker, [non_strict]),
@@ -86,14 +93,21 @@ worker_spawn_test() ->
     {ok, Pid1} = worker:spawn(link, no_name, my_worker, [a, b]),
     {links, [Link]} = process_info(Pid1, links),
     Link = self(),
+    process_flag(trap_exit, true),
+    erlang:exit(Pid1, kill),
+    ok = receive
+        {'EXIT', Pid1, killed} ->
+            ok
+    end,
 
     Parent = self(),
     {ok, {Pid2, Monitor2}} = worker:spawn(monitor, no_name, my_worker, [a, b]),
     {monitored_by, [Parent]} = process_info(Pid2, monitored_by),
     erlang:exit(Pid2, yolo),
-    timer:sleep(50),
-    {messages, [{'DOWN', Monitor2, process, Pid2, yolo}]} =
-        process_info(self(), messages),
+    ok = receive
+        {'DOWN', Monitor2, process, Pid2, yolo} ->
+            ok
+    end,
 
     % Test starting with a name.
     false = lists:member(foobar, registered()),
@@ -101,6 +115,37 @@ worker_spawn_test() ->
     undefined = worker:get_state(Pid3),
     true = lists:member(foobar, registered()),
     already_spawned = worker:spawn(no_link, {name, foobar}, my_worker, [a, b]),
+
+    meck:unload(my_worker),
+
+    ok.
+
+worker_enter_loop_test() ->
+    flush_messages(),
+
+    meck:new(my_worker, [non_strict]),
+    meck:expect(my_worker, handle_request, fun(number, From, a) ->
+        ok = worker:reply(From, 42),
+        {stop, normal, b}
+    end),
+
+    Parent = self(),
+    spawn(fun() ->
+        a = worker:get_state(Parent),
+        {reply, 42} = worker:request(Parent, number)
+    end),
+    ok = worker:enter_loop(my_worker, a),
+
+    meck:expect(my_worker, terminate, fun(normal, b) ->
+        custom_ok
+    end),
+    spawn(fun() ->
+        a = worker:get_state(Parent),
+        {reply, 42} = worker:request(Parent, number)
+    end),
+    custom_ok = worker:enter_loop(my_worker, a),
+
+    timer:sleep(50),
 
     meck:unload(my_worker),
 

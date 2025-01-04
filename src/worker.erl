@@ -10,10 +10,10 @@
 -module(worker).
 
 -export([spawn/3, spawn/4, spawn/5]).
+-export([enter_loop/2]).
 -export([request/2, request/3]).
 -export([notify/2]).
 -export([reply/2]).
-
 -export([get_state/1]).
 
 -compile({no_auto_import, [spawn/4]}).
@@ -80,7 +80,7 @@
     {stop, Reason :: term(), State :: term()}
 .
 
--callback terminate(Reason :: term(), State :: term()) -> no_return().
+-callback terminate(Reason :: term(), State :: term()) -> Return :: term().
 
 -spec spawn(spawner:mode(), module(), [term()]) -> spawn_return().
 spawn(Mode, Module, Args) ->
@@ -159,6 +159,10 @@ spawn(Mode, Name, Module, Args, Timeout) ->
         {error, Reason} ->
             {error, Reason}
     end.
+
+-spec enter_loop(module(), term()) -> Return :: term().
+enter_loop(Module, State) ->
+    loop(Module, State, no_action, []).
 
 -spec request(id(), term()) -> {reply, Response :: term()} | no_reply.
 request(Server, Request) ->
@@ -293,8 +297,7 @@ loop(Module, State, no_action, Timers) ->
 try_terminate(Module, Reason, State) ->
     case erlang:function_exported(Module, terminate, 2) of
         true ->
-            Module:terminate(Reason, State),
-            ok;
+            Module:terminate(Reason, State);
         false ->
             ok
     end.
