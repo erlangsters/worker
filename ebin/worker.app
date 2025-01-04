@@ -1,4 +1,4 @@
-{application, 'otpless_worker', [
+{application, 'worker', [
 	{description, "The gen_server behavior for OTPless Erlang."},
 	{vsn, "0.1.0"},
 	{modules, ['worker']},

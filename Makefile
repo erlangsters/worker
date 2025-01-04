@@ -1,4 +1,4 @@
-PROJECT = otpless_worker
+PROJECT = worker
 PROJECT_DESCRIPTION = The gen_server behavior for OTPless Erlang.
 PROJECT_VERSION = 0.1.0
 

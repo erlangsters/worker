@@ -1,7 +1,7 @@
-# OTPless Worker
+# Worker Behavior (aka 'gen_server')
 
 A re-implementation of the `gen_server` behavior (from the OTP framework) for
-the OTPless distribution of Erlang.
+the OTPless distribution of Erlang, named `worker`.
 
 :construction: It's a work-in-progress, use at your own risk.
 
@@ -19,7 +19,7 @@ of your project.
 
 ```
 {deps, [
-  {otpless_worker, {git, "https://github.com/erlangsters/otpless-worker.git", {tag, "master"}}}
+  {worker, {git, "https://github.com/erlangsters/worker.git", {tag, "master"}}}
 ]}.
 ```
 
@@ -27,8 +27,8 @@ If you happen to use the **Erlang.mk** build system, then add the following to
 your Makefile.
 
 ```
-BUILD_DEPS = otpless_worker
-dep_otpless_worker = git https://github.com/erlangsters/otpless-worker master
+BUILD_DEPS = worker
+dep_worker = git https://github.com/erlangsters/worker master
 ```
 
 In practice, you want to replace the branch "master" with a specific "tag" to
