@@ -6,7 +6,7 @@ the OTPless distribution of Erlang, named `worker`.
 :construction: It's a work-in-progress, use at your own risk.
 
 Written by the Erlangsters [community](https://www.erlangsters.org/) and
-released under the MIT [license](/https://opensource.org/license/mit).
+released under the MIT [license](https://opensource.org/license/mit).
 
 ## Getting started
 
