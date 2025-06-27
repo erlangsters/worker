@@ -8,6 +8,11 @@
 %% Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, November 2024
 %%
 -module(worker).
+-moduledoc """
+Worker API and behavior.
+
+To be written.
+""".
 
 -export([spawn/3, spawn/4, spawn/5]).
 -export([enter_loop/2]).
@@ -18,21 +23,24 @@
 
 -compile({no_auto_import, [spawn/4]}).
 
-%%
-%% The worker behavior.
-%%
-%% To be written.
-%%
+-doc "To be written.".
 -type name() :: atom().
+-doc "To be written.".
 -type id() :: name() | pid().
 
+-doc "To be written.".
 -type timer_action() :: {timer, timeout(), Message :: term()}.
+-doc "To be written.".
 -type task_action() :: {task, Message :: term()}.
+-doc "To be written.".
 -type action() :: timer_action() | task_action().
 
+-doc "To be written.".
 -type request_id() :: erlang:timestamp().
+-doc "To be written.".
 -type from() :: {pid(), request_id()}.
 
+-doc "To be written.".
 -type spawn_return() ::
     already_spawned |
     {ok, spawner:spawn_return()} |
@@ -41,12 +49,22 @@
     {error, Reason :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback initialize(Args :: [term()]) ->
     {continue, State :: term()} |
     {continue, State :: term(), Action :: action()} |
     {abort, Reason :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback handle_request(Request :: term(), From :: from(), State :: term()) ->
     {reply, Response :: term(), NewState :: term()} |
     {reply, Response :: term(), NewState :: term(), Action :: action()} |
@@ -56,41 +74,81 @@
     {stop, Reason :: term(), NewState :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback handle_notification(Notification :: term(), State :: term()) ->
     {continue, NewState :: term()} |
     {continue, NewState :: term(), Action :: action()} |
     {stop, Reason :: term(), State :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback handle_message(Message :: term(), State :: term()) ->
     {continue, NewState :: term()} |
     {continue, NewState :: term(), Action :: action()} |
     {stop, Reason :: term(), State :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback handle_task(Payload :: term(), State :: term()) ->
     {continue, NewState :: term()} |
     {continue, NewState :: term(), Action :: action()} |
     {stop, Reason :: term(), State :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback handle_timeout(Payload :: term(), State :: term()) ->
     {continue, NewState :: term()} |
     {continue, NewState :: term(), Action :: action()} |
     {stop, Reason :: term(), State :: term()}
 .
 
+-doc """
+To be written.
+
+To be written.
+""".
 -callback terminate(Reason :: term(), State :: term()) -> Return :: term().
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec spawn(spawner:mode(), module(), [term()]) -> spawn_return().
 spawn(Mode, Module, Args) ->
     spawn(Mode, no_name, Module, Args).
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec spawn(spawner:mode(), no_name | {name, name()}, module(), [term()]) -> 
     spawn_return().
 spawn(Mode, Name, Module, Args) ->
     spawn(Mode, Name, Module, Args, infinity).
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec spawn(
     spawner:mode(), 
     no_name | {name, name()}, 
@@ -160,14 +218,29 @@ spawn(Mode, Name, Module, Args, Timeout) ->
             {error, Reason}
     end.
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec enter_loop(module(), term()) -> Return :: term().
 enter_loop(Module, State) ->
     loop(Module, State, no_action, []).
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec request(id(), term()) -> {reply, Response :: term()} | no_reply.
 request(Server, Request) ->
     request(Server, Request, infinity).
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec request(id(), term(), timeout()) -> 
     {reply, Response :: term()} | no_reply.
 request(Server, Request, Timeout) ->
@@ -182,16 +255,31 @@ request(Server, Request, Timeout) ->
         no_reply
     end.
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec notify(id(), term()) -> ok.
 notify(Server, Message) ->
     Server ! {'$worker_notification', Message},
     ok.
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec reply(from(), term()) -> ok.
 reply({Pid, RequestId}, Response) ->
     Pid ! {reply, RequestId, Response},
     ok.
 
+-doc """
+To be written.
+
+To be written.
+""".
 -spec get_state(id()) -> term().
 get_state(Server) ->
     Server ! {'$worker_state', self()},
