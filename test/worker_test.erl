@@ -21,6 +21,20 @@ flush_messages() ->
         ok
     end.
 
+assert_no_message(Message, Timeout) ->
+    receive
+        Message -> not_ok
+    after Timeout ->
+        ok
+    end.
+
+assert_message(Message, Timeout) ->
+    receive
+        Message -> ok
+    after Timeout ->
+        not_ok
+    end.
+
 worker_test() ->
     % A canonical test meant to verify the key features of the behavior.
     meck:new(my_worker, [non_strict]),
@@ -192,18 +206,8 @@ worker_initialize_test() ->
         {stop, ok, yolo}
     end),
     {ok, Pid2} = worker:spawn(no_link, no_name, my_worker, [a, b]),
-    ok = receive
-        {Pid2, handle_timeout_oloy} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_timeout_oloy} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_timeout_oloy}, 50),
+    ok = assert_message({Pid2, handle_timeout_oloy}, 1000),
 
     % To test the "error" cases, we cover the following scenarios.
     % - The args do not match and therefore the initialize function does not
@@ -269,21 +273,11 @@ worker_handle_request_test() ->
     a = worker:get_state(Pid2),
     {reply, 42} = worker:request(Pid2, number),
     b = worker:get_state(Pid2),
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_timeout_yolo}, 50),
+    ok = assert_message({Pid2, handle_timeout_yolo}, 1000),
     c = worker:get_state(Pid2),
 
-    erlang:exit(Pid1, kill),
+    erlang:exit(Pid2, kill),
 
     % Test the callback that does a "reply": with a task action.
     meck:expect(my_worker, handle_request, fun(number, _From, a) ->
@@ -429,18 +423,8 @@ worker_handle_notification_test() ->
     {ok, Pid2} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid2),
     ok = worker:notify(Pid2, number),
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_timeout_yolo}, 50),
+    ok = assert_message({Pid2, handle_timeout_yolo}, 1000),
     c = worker:get_state(Pid2),
 
     erlang:exit(Pid2, kill),
@@ -523,18 +507,8 @@ worker_handle_message_test() ->
     {ok, Pid2} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid2),
     Pid2 ! number,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_timeout_yolo}, 50),
+    ok = assert_message({Pid2, handle_timeout_yolo}, 1000),
     c = worker:get_state(Pid2),
 
     erlang:exit(Pid2, kill),
@@ -605,32 +579,12 @@ worker_handle_timeout_test() ->
     {ok, Pid1} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid1),
     Pid1 ! number,
-    ok = receive
-        {Pid1, handle_timeout_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid1, handle_timeout_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid1, handle_timeout_yolo}, 50),
+    ok = assert_message({Pid1, handle_timeout_yolo}, 1000),
     timer:sleep(25),
     b = worker:get_state(Pid1),
-    ok = receive
-        {Pid1, handle_timeout_oloy} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid1, handle_timeout_oloy} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid1, handle_timeout_oloy}, 50),
+    ok = assert_message({Pid1, handle_timeout_oloy}, 1000),
     timer:sleep(25),
     c = worker:get_state(Pid1),
 
@@ -648,18 +602,8 @@ worker_handle_timeout_test() ->
     {ok, Pid2} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid2),
     Pid2 ! number,
-    ok = receive
-        {Pid2, handle_task_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_task_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_task_yolo}, 50),
+    ok = assert_message({Pid2, handle_task_yolo}, 1000),
     timer:sleep(25),
     c = worker:get_state(Pid2),
 
@@ -676,18 +620,8 @@ worker_handle_timeout_test() ->
     {ok, Pid3} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid3),
     Pid3 ! number,
-    ok = receive
-        {Pid3, terminate_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid3, terminate_yolo} ->
-            ok
-    after 100 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid3, terminate_yolo}, 50),
+    ok = assert_message({Pid3, terminate_yolo}, 1000),
     false = is_process_alive(Pid3, 50),
 
     meck:unload(my_worker),
@@ -747,18 +681,8 @@ worker_handle_task_test() ->
     {ok, Pid2} = worker:spawn(no_link, no_name, my_worker, []),
     a = worker:get_state(Pid2),
     Pid2 ! number,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            not_ok
-    after 50 ->
-        ok
-    end,
-    ok = receive
-        {Pid2, handle_timeout_yolo} ->
-            ok
-    after 50 ->
-        not_ok
-    end,
+    ok = assert_no_message({Pid2, handle_timeout_yolo}, 50),
+    ok = assert_message({Pid2, handle_timeout_yolo}, 1000),
     timer:sleep(25),
     c = worker:get_state(Pid2),
 
