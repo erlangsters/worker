@@ -1,8 +1,4 @@
-[{<<"rebar">>,
-  {git,"https://github.com/eproxus/meck",
-       {ref,"29360b25b708b2dc9d68a4f46f6a1b8b55f72518"}},
-  1},
- {<<"spawn_mode">>,
+[{<<"spawn_mode">>,
   {git,"https://github.com/erlangsters/spawn-mode",
-       {ref,"a77d8a222e0c8a74cdec58687aa5c08089cb93d9"}},
+       {ref,"6591394154a5d4d316d5e7e02b93d99ebff6bef2"}},
   0}].
